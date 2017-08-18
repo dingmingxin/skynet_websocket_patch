@@ -2,6 +2,19 @@
 模仿skynet自带的gate watchdog 和 gateserver 对skynet增加websocket的协议处理
 * 嵌入到skynet中
 请自行在skynet上层的其他目录建立Makefile来编译相关的.c文件 和lua库
+
+Makefile请参考Makefile.example文件
+
+为了避免对skynet库进行patch, 请按照下面的目录结构来组织
+
+** 目录结构
+*** 3rd/skynet_ws_patch
+本代码库
+*** skynet
+skynet源代码
+*** Makefile
+外部的Makefile 参考Makefile.example
+
 * 使用
 websocket的例子, 使用了agent的例子
 

@@ -1,0 +1,45 @@
+include platform.mk
+
+.PHONY: prepare all skynet 
+
+CFLAGS = -g -O2 -Wall
+
+SERVER_PATH ?= server
+
+LUA_CLIB_PATH = server/luaclib/
+
+LUA_CLIBS = websocketnetpack
+
+LUA_INC ?= skynet/3rd/lua/
+SKYNET_INC ?= skynet/skynet-src/
+
+LUA_BIN = $(abspath skynet/3rd/lua/lua)
+
+CUSTOM_CSERVICE_PATH = server/cservice # 自定义c服务的so文件存放位置
+
+
+mkdirs:
+	-mkdir -p $(LUA_CLIB_PATH)
+prepare: mkdirs
+	git submodule update --init
+
+skynet/Makefile :
+	git submodule update --init
+
+skynet : skynet/Makefile
+	cd skynet && $(MAKE) $(PLAT) && cd ..
+
+$(LUA_CLIB_PATH)/websocketnetpack.so : 3rd/skynet_ws_patch/lualib-src/lua-websocketnetpack.c | $(LUA_CLIB_PATH)
+	$(CC) $(CFLAGS) $(SHARED) -I$(LUA_INC) -I$(SKYNET_INC) $^ -o $@
+
+ws_patch:
+	-cp -v 3rd/skynet_ws_patch/lualib/snax/wsgateserver.lua ./server/lualib/snax/
+	cp -v 3rd/skynet_ws_patch/service/wsgate.lua ./server/service/common/
+
+all : prepare \
+	skynet 3rd \
+	$(foreach v, $(LUA_CLIBS), $(LUA_CLIB_PATH)/$(v).so) \
+	ws_patch
+
+$(PLATS): all
+
